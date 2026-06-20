@@ -9,7 +9,7 @@ geo_data = geo_response.json()
 try:
     latitude = geo_data["results"][0]["latitude"]
     longitude = geo_data["results"][0]["longitude"]
-except:
+except KeyError:
     print("Sorry, I couldn't find that city. Try again?")
     exit()
 
