@@ -1,13 +1,17 @@
 import requests
 
-city_name = input("BOMET: ")
+city_name = input("Enter a city name: ")
 
 geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_name}"
 geo_response = requests.get(geo_url)
 geo_data = geo_response.json()
 
-latitude = geo_data["results"][0]["latitude"]
-longitude = geo_data["results"][0]["longitude"]
+try:
+    latitude = geo_data["results"][0]["latitude"]
+    longitude = geo_data["results"][0]["longitude"]
+except:
+    print("Sorry, I couldn't find that city. Try again?")
+    exit()
 
 weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current_weather=true"
 weather_response = requests.get(weather_url)
