@@ -18,4 +18,8 @@ weather_response = requests.get(weather_url)
 weather_data = weather_response.json()
 
 temperature = weather_data["current_weather"]["temperature"]
-print(f"Current temperature in {city_name}: {temperature}°C")
+windspeed = weather_data["current_weather"]["windspeed"]
+
+print(f"Weather in {city_name}:")
+print(f"  Temperature: {temperature}°C")
+print(f"  Wind speed: {windspeed} km/h")
