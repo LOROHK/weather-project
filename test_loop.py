@@ -1,6 +1,6 @@
 import requests
 
-cities = ["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Bomet"]
+cities = [city.strip() for city in input("Enter cities separated by commas: ").split(",")]
 
 for city in cities:
     geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}"
