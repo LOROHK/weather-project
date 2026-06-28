@@ -1,37 +1,63 @@
 import requests
 
-# === CONFIGURATION - swap these for real values ===
-LOGIN_URL = "https://your-hospital-api.com/auth/login"
-USERNAME = "your_username"
-PASSWORD = "your_password"
-# ==================================================
+# === AFYANALYTICS CREDENTIALS ===
+BASE_URL = "https://staging.collabmed.net/api/external"
+PLATFORM_NAME = "Test Platform v2"
+PLATFORM_KEY = "afya_2d00d74512953c933172ab924f5073fa"
+PLATFORM_SECRET = "e0502a5c052842cf19d0305455437b791d201761c88e2ad641680b2d5d356ba8"
+CALLBACK_URL = "https://your-platform-url/callback"
 
-def get_token(username, password):
-    credentials = {
-        "username": username,
-        "password": password
+# === STEP 1: INITIATE HANDSHAKE ===
+def initiate_handshake():
+    url = f"{BASE_URL}/initiate-handshake"
+    payload = {
+        "platform_name": PLATFORM_NAME,
+        "platform_key": PLATFORM_KEY,
+        "platform_secret": PLATFORM_SECRET,
+        "callback_url": CALLBACK_URL
     }
-    response = requests.post(LOGIN_URL, json=credentials)
+    print("Step 1: Initiating handshake...")
+    response = requests.post(url, json=payload)
     data = response.json()
+    print("Status code:", response.status_code)
+    print("Response:", data)
     try:
-        token = data["token"]  # adjust key name to match real API
-        print("Token received successfully")
+        token = data["data"]["handshake_token"]
+        expires = data["data"]["expires_at"]
+        print(f"Handshake token received. Expires at: {expires}")
         return token
     except KeyError:
-        print("Login failed:", data)
+        print("Failed to get handshake token:", data)
         return None
 
-def get_protected_data(token, endpoint):
-    headers = {
-        "Authorization": f"Bearer {token}"
+# === STEP 2: COMPLETE HANDSHAKE ===
+def complete_handshake(handshake_token):
+    url = f"{BASE_URL}/complete-handshake"
+    payload = {
+        "handshake_token": handshake_token,
+        "platform_key": PLATFORM_KEY
     }
-    response = requests.get(endpoint, headers=headers)
-    return response.json()
+    print("\nStep 2: Completing handshake...")
+    response = requests.post(url, json=payload)
+    data = response.json()
+    print("Status code:", response.status_code)
+    print("Response:", data)
+    try:
+        access_token = data["data"]["access_token"]
+        print("Access token received - handshake complete!")
+        return access_token
+    except KeyError:
+        print("Failed to complete handshake:", data)
+        return None
 
 # === MAIN FLOW ===
-token = get_token(USERNAME, PASSWORD)
+handshake_token = initiate_handshake()
 
-if token:
-    print("Handshake complete - ready to make authenticated requests")
+if handshake_token:
+    access_token = complete_handshake(handshake_token)
+    if access_token:
+        print("\nAuthentication successful - ready to use Afyanalytics API")
+    else:
+        print("\nHandshake failed at step 2")
 else:
-    print("Handshake failed - check credentials")
+    print("\nHandshake failed at step 1")
